@@ -238,6 +238,28 @@ pub fn run() {
             // 初始化系统托盘
             tray::create_tray(app.handle());
 
+            // 注册全局 Win+V 热键
+            let app_handle_hotkey = app.handle().clone();
+            let (hotkey_tx, hotkey_rx) = std::sync::mpsc::channel();
+            let _ = hotkey::HotkeyManager::register(hotkey_tx);
+
+            // 处理热键事件
+            std::thread::spawn(move || {
+                while let Ok(action) = hotkey_rx.recv() {
+                    match action {
+                        hotkey::HotkeyAction::ToggleWindow => {
+                            tray::toggle_main_window(&app_handle_hotkey);
+                        }
+                        hotkey::HotkeyAction::ShowWindow => {
+                            tray::show_main_window(&app_handle_hotkey);
+                        }
+                        hotkey::HotkeyAction::HideWindow => {
+                            tray::hide_main_window(&app_handle_hotkey);
+                        }
+                    }
+                }
+            });
+
             // 启动剪贴板监听
             let app_handle = app.handle().clone();
             let rx = {

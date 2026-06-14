@@ -31,8 +31,11 @@ zeroize = "1"
 rand = "0.8"
 windows-sys = { version = "0.59", features = [
     "Win32_Foundation",
+    "Win32_UI_Input_KeyboardAndMouse",
+    "Win32_UI_WindowsAndMessaging",
 ] }
 image = "0.25"
 data-encoding = "2"
 hex = "0.4"
 clipboard-win = "5"
+winreg = "0.55"
