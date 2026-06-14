@@ -33,6 +33,10 @@ windows-sys = { version = "0.59", features = [
     "Win32_Foundation",
     "Win32_UI_Input_KeyboardAndMouse",
     "Win32_UI_WindowsAndMessaging",
+    "Win32_System_DataExchange",
+    "Win32_System_Memory",
+    "Win32_Graphics_Gdi",
+    "Win32_Storage_FileSystem",
 ] }
 image = "0.25"
 data-encoding = "2"

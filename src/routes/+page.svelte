@@ -152,7 +152,9 @@
             {:else}
               <div class="image-preview">
                 {#if entry.image_thumb}
-                  <img src={entry.image_thumb} alt="剪贴板图片" />
+                  <img src="data:image/png;base64,{entry.image_thumb}" alt="剪贴板图片" />
+                {:else if entry.image_base64}
+                  <img src="data:image/png;base64,{entry.image_base64}" alt="剪贴板图片" />
                 {:else}
                   <span>[图片]</span>
                 {/if}
