@@ -5,13 +5,15 @@ mod storage;
 mod tray;
 mod vault;
 
+use std::sync::Mutex;
+use std::thread;
+
 use clipboard::monitor::ClipboardManager;
 use clipboard::types::{ClipboardEntry, ContentType};
 use common::AppError;
-use std::sync::Mutex;
 use storage::clipboard_store::ClipboardStoreIO;
 use storage::vault_store::VaultStoreIO;
-use tauri::Manager;
+use tauri::{Emitter, Manager};
 use vault::manager::VaultManager;
 
 /// 应用全局状态
@@ -35,7 +37,9 @@ fn delete_clipboard_entry(state: tauri::State<AppState>, id: String) -> Result<b
     let mut mgr = state.clipboard_mgr.lock().map_err(|e| e.to_string())?;
     let result = mgr.delete_entry(&id);
     if result {
-        state.clipboard_store.save(mgr.to_store().entries.as_slice())?;
+        state
+            .clipboard_store
+            .save(mgr.to_store().entries.as_slice())?;
     }
     Ok(result)
 }
@@ -45,13 +49,18 @@ fn toggle_pin_entry(state: tauri::State<AppState>, id: String) -> Result<bool, S
     let mut mgr = state.clipboard_mgr.lock().map_err(|e| e.to_string())?;
     let result = mgr.toggle_pin(&id);
     if result {
-        state.clipboard_store.save(mgr.to_store().entries.as_slice())?;
+        state
+            .clipboard_store
+            .save(mgr.to_store().entries.as_slice())?;
     }
     Ok(result)
 }
 
 #[tauri::command]
-fn search_clipboard(state: tauri::State<AppState>, query: String) -> Result<Vec<ClipboardEntry>, String> {
+fn search_clipboard(
+    state: tauri::State<AppState>,
+    query: String,
+) -> Result<Vec<ClipboardEntry>, String> {
     let mgr = state.clipboard_mgr.lock().map_err(|e| e.to_string())?;
     Ok(mgr.search(&query).into_iter().cloned().collect())
 }
@@ -61,7 +70,9 @@ fn clean_expired(state: tauri::State<AppState>) -> Result<usize, String> {
     let mut mgr = state.clipboard_mgr.lock().map_err(|e| e.to_string())?;
     let count = mgr.clean_expired();
     if count > 0 {
-        state.clipboard_store.save(mgr.to_store().entries.as_slice())?;
+        state
+            .clipboard_store
+            .save(mgr.to_store().entries.as_slice())?;
     }
     Ok(count)
 }
@@ -69,7 +80,10 @@ fn clean_expired(state: tauri::State<AppState>) -> Result<usize, String> {
 // ==================== 密码本命令 ====================
 
 #[tauri::command]
-fn vault_initialize(state: tauri::State<AppState>, master_password: String) -> Result<bool, String> {
+fn vault_initialize(
+    state: tauri::State<AppState>,
+    master_password: String,
+) -> Result<bool, String> {
     let mut mgr = state.vault_mgr.lock().map_err(|e| e.to_string())?;
     mgr.initialize(&master_password)?;
     state.vault_store.save_vault(mgr.store())?;
@@ -77,7 +91,10 @@ fn vault_initialize(state: tauri::State<AppState>, master_password: String) -> R
 }
 
 #[tauri::command]
-fn vault_unlock(state: tauri::State<AppState>, master_password: String) -> Result<bool, String> {
+fn vault_unlock(
+    state: tauri::State<AppState>,
+    master_password: String,
+) -> Result<bool, String> {
     let mut mgr = state.vault_mgr.lock().map_err(|e| e.to_string())?;
     let result = mgr.unlock(&master_password)?;
     Ok(result)
@@ -154,19 +171,30 @@ fn vault_get_password(state: tauri::State<AppState>, id: String) -> Result<Strin
 }
 
 #[tauri::command]
-fn vault_get_entries(state: tauri::State<AppState>) -> Result<Vec<common::PasswordEntry>, String> {
+fn vault_get_entries(
+    state: tauri::State<AppState>,
+) -> Result<Vec<common::PasswordEntry>, String> {
     let mgr = state.vault_mgr.lock().map_err(|e| e.to_string())?;
     Ok(mgr.get_entries().clone())
 }
 
 #[tauri::command]
-fn vault_search(state: tauri::State<AppState>, query: String) -> Result<Vec<common::PasswordEntry>, String> {
+fn vault_search(
+    state: tauri::State<AppState>,
+    query: String,
+) -> Result<Vec<common::PasswordEntry>, String> {
     let mgr = state.vault_mgr.lock().map_err(|e| e.to_string())?;
     Ok(mgr.search(&query).into_iter().cloned().collect())
 }
 
 #[tauri::command]
-fn vault_generate_password(length: u32, use_upper: bool, use_lower: bool, use_digits: bool, use_symbols: bool) -> String {
+fn vault_generate_password(
+    length: u32,
+    use_upper: bool,
+    use_lower: bool,
+    use_digits: bool,
+    use_symbols: bool,
+) -> String {
     VaultManager::generate_password(length, use_upper, use_lower, use_digits, use_symbols)
 }
 
@@ -210,13 +238,53 @@ pub fn run() {
             // 初始化系统托盘
             tray::create_tray(app.handle());
 
+            // 启动剪贴板监听
+            let app_handle = app.handle().clone();
+            let rx = {
+                let state = app.state::<AppState>();
+                let mut mgr = state.clipboard_mgr.lock().unwrap();
+                mgr.start_monitoring()
+            };
+            // 单独线程处理剪贴板事件并存入管理器
+            thread::spawn(move || {
+                log::info!("📋 Clipboard event processor started");
+                loop {
+                    match rx.recv() {
+                        Ok(event) => {
+                            if let clipboard::monitor::ClipboardEvent::NewEntry(entry) = event {
+                                // 通过 app_handle 访问 state 并存入
+                                if let Some(state) = app_handle.try_state::<AppState>() {
+                                    if let Ok(mut mgr) = state.clipboard_mgr.lock() {
+                                        let is_new = mgr.process_new_entry(entry);
+                                        if is_new {
+                                            // 持久化保存
+                                            let _ = state.clipboard_store
+                                                .save(mgr.to_store().entries.as_slice());
+                                            // 通知前端刷新
+                                            let _ = app_handle.emit("clipboard-updated", ());
+                                            log::info!("📋 Clipboard saved & frontend notified");
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        Err(_) => {
+                            log::error!("Clipboard event channel closed");
+                            break;
+                        }
+                    }
+                }
+            });
+
             // 清理过期剪贴板条目
             if let Some(state) = app.try_state::<AppState>() {
                 if let Ok(mut mgr) = state.clipboard_mgr.lock() {
                     let cleaned = mgr.clean_expired();
                     if cleaned > 0 {
                         log::info!("Cleaned {} expired clipboard entries", cleaned);
-                        let _ = state.clipboard_store.save(mgr.to_store().entries.as_slice());
+                        let _ = state
+                            .clipboard_store
+                            .save(mgr.to_store().entries.as_slice());
                     }
                 }
             }

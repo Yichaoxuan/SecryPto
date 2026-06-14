@@ -2,6 +2,7 @@
   import "../app.css";
   import TabNav from "$lib/components/TabNav.svelte";
 
+  let { children }: { children: import("svelte").Snippet } = $props();
   let activeTab = $state<"clipboard" | "vault" | "settings">("clipboard");
 </script>
 
@@ -14,7 +15,7 @@
 
   <main class="main-content">
     {#if activeTab === "clipboard"}
-      <slot />
+      {@render children()}
     {:else if activeTab === "vault"}
       <div class="placeholder-tab">
         <span class="placeholder-icon">🔒</span>
