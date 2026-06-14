@@ -1,0 +1,234 @@
+/* ============================================
+   Secrypto - Win11 Fluent Design 主题样式
+   ============================================ */
+
+/* === CSS 变量（亮色/暗色主题） === */
+:root {
+  /* 颜色 - 亮色 */
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F3F3F3;
+  --bg-tertiary: #E5E5E5;
+  --bg-card: #F9F9F9;
+  --bg-card-hover: #F0F0F0;
+  --bg-input: #FFFFFF;
+  --bg-overlay: rgba(0, 0, 0, 0.04);
+
+  --accent: #005FB8;
+  --accent-hover: #004A8C;
+  --accent-soft: rgba(0, 95, 184, 0.08);
+
+  --text-primary: #1A1A1A;
+  --text-secondary: #616161;
+  --text-tertiary: #9D9D9D;
+  --text-inverse: #FFFFFF;
+
+  --border-default: #E0E0E0;
+  --border-hover: #B0B0B0;
+  --border-accent: #005FB8;
+
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08);
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  --font-family: 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-size-xs: 11px;
+  --font-size-sm: 12px;
+  --font-size-md: 14px;
+  --font-size-lg: 18px;
+  --font-size-xl: 24px;
+
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 24px;
+
+  --transition-fast: 150ms ease;
+  --transition-normal: 200ms ease;
+
+  --window-radius: 8px;
+
+  /* Mica 背景效果 */
+  --mica-background: #F3F3F3;
+  --mica-tint: rgba(243, 243, 243, 0.9);
+}
+
+/* 暗色模式 */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-primary: #1C1C1C;
+    --bg-secondary: #2D2D2D;
+    --bg-tertiary: #383838;
+    --bg-card: #252525;
+    --bg-card-hover: #2A2A2A;
+    --bg-input: #333333;
+    --bg-overlay: rgba(255, 255, 255, 0.04);
+
+    --accent: #60CDFF;
+    --accent-hover: #4CB4E8;
+    --accent-soft: rgba(96, 205, 255, 0.08);
+
+    --text-primary: #FFFFFF;
+    --text-secondary: #9D9D9D;
+    --text-tertiary: #6B6B6B;
+    --text-inverse: #1A1A1A;
+
+    --border-default: #404040;
+    --border-hover: #606060;
+    --border-accent: #60CDFF;
+
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+
+    --mica-background: #202020;
+    --mica-tint: rgba(32, 32, 32, 0.9);
+  }
+}
+
+/* === 全局样式 === */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  font-family: var(--font-family);
+  font-size: var(--font-size-md);
+  color: var(--text-primary);
+  background-color: var(--mica-background);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  user-select: none;
+  /* 窗口拖动 */
+  -webkit-app-region: drag;
+}
+
+/* 窗口内容区域不拖动 */
+input, textarea, button, [data-no-drag] {
+  -webkit-app-region: no-drag;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--text-tertiary);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* === 通用组件类 === */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  transition: all var(--transition-fast);
+}
+
+.card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-hover);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xs);
+  padding: 6px 12px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  -webkit-app-region: no-drag;
+}
+
+.btn:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-hover);
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--text-inverse);
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.btn-ghost {
+  border-color: transparent;
+  background: transparent;
+}
+
+.btn-ghost:hover {
+  background: var(--accent-soft);
+  border-color: transparent;
+}
+
+.input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-md);
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.input::placeholder {
+  color: var(--text-tertiary);
+}
+
+/* === 动画 === */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.fade-in {
+  animation: fadeIn var(--transition-normal) ease forwards;
+}

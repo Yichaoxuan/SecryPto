@@ -1,0 +1,42 @@
+[package]
+name = "app"
+version = "0.1.0"
+description = "Secrypto - Clipboard Manager & Password Vault"
+authors = ["you"]
+license = ""
+repository = ""
+edition = "2021"
+rust-version = "1.77.2"
+
+[lib]
+name = "app_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.6.2" }
+
+[dependencies]
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+log = "0.4"
+tauri = { version = "2.11.2", features = ["tray-icon"] }
+tauri-plugin-log = "2"
+chrono = { version = "0.4", features = ["serde"] }
+base64 = "0.22"
+uuid = { version = "1", features = ["v4"] }
+sha2 = "0.10"
+aes-gcm = "0.10"
+argon2 = "0.5"
+zeroize = "1"
+rand = "0.8"
+windows-sys = { version = "0.59", features = [
+    "Win32_Foundation",
+    "Win32_UI_Input_KeyboardAndMouse",
+    "Win32_UI_WindowsAndMessaging",
+    "Win32_System_DataExchange",
+    "Win32_Graphics_Gdi",
+    "Win32_Storage_FileSystem",
+] }
+image = "0.25"
+data-encoding = "2"
+hex = "0.4"
