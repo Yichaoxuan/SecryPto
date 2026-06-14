@@ -1,6 +1,7 @@
 <script lang="ts">
   import "../app.css";
   import TabNav from "$lib/components/TabNav.svelte";
+  import SettingsPage from "./settings/+page.svelte";
 
   let { children }: { children: import("svelte").Snippet } = $props();
   let activeTab = $state<"clipboard" | "vault" | "settings">("clipboard");
@@ -22,10 +23,7 @@
         <p class="placeholder-text">密码本 — 开发中</p>
       </div>
     {:else if activeTab === "settings"}
-      <div class="placeholder-tab">
-        <span class="placeholder-icon">⚙️</span>
-        <p class="placeholder-text">设置 — 开发中</p>
-      </div>
+      <SettingsPage />
     {/if}
   </main>
 </div>
