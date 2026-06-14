@@ -1,6 +1,7 @@
 <script lang="ts">
   import "../app.css";
   import TabNav from "$lib/components/TabNav.svelte";
+  import VaultPage from "./vault/+page.svelte";
   import SettingsPage from "./settings/+page.svelte";
 
   let { children }: { children: import("svelte").Snippet } = $props();
@@ -18,10 +19,7 @@
     {#if activeTab === "clipboard"}
       {@render children()}
     {:else if activeTab === "vault"}
-      <div class="placeholder-tab">
-        <span class="placeholder-icon">🔒</span>
-        <p class="placeholder-text">密码本 — 开发中</p>
-      </div>
+      <VaultPage />
     {:else if activeTab === "settings"}
       <SettingsPage />
     {/if}
@@ -56,23 +54,5 @@
     flex: 1;
     overflow-y: auto;
     padding: var(--spacing-sm) var(--spacing-lg) var(--spacing-lg);
-  }
-
-  .placeholder-tab {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 200px;
-    color: var(--text-tertiary);
-  }
-
-  .placeholder-icon {
-    font-size: 48px;
-    margin-bottom: var(--spacing-md);
-  }
-
-  .placeholder-text {
-    font-size: var(--font-size-md);
   }
 </style>
